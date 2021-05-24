@@ -1,3 +1,7 @@
+# T6知识大纲
+
+![image-20210524191024256](img/MySQL.img/image-20210524191024256.png)
+
 # MySQL命令
 
 ```shell
@@ -14,6 +18,9 @@ service mysql restart
 ```shell
 #登录进入
 mysql -u root -p 
+
+#清屏
+ctrl l
 ```
 
 ```mysql
@@ -43,11 +50,42 @@ show tables;
 
 #显示数据表结构
 describe 数据表名;
+
+#退出
+quit 
+exit
 ```
 
-向表中添加数据
 
-![image-20210206161430580](img/MySQL.img/image-20210206161430580.png)
+
+
+
+
+
+
+
+# SQL
+
+RDBMS：关系型数据库管理系统（MySQL，Oracle）
+
+RDB：关系型数据库
+
+table：二维表（行：记录；列：字段/属性）
+
+SQL：Structured Query Language，结构化查询语言
+
+- 数据查询：select
+- 数据定义：create，drop，alter
+- 数据操纵：insert，update，delete
+- 数据控制：grant，revoke
+
+外模式 — 视图
+
+模式 — 基本表
+
+内模式 — 存储文件
+
+
 
 # MySQL索引
 
