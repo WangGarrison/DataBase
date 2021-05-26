@@ -1,4 +1,4 @@
-# T6知识大纲
+# 知识大纲
 
 ![image-20210524191024256](img/MySQL.img/image-20210524191024256.png)
 
@@ -18,6 +18,9 @@ service mysql restart
 ```shell
 #登录进入
 mysql -u root -p 
+
+#远程登录
+mysql -h 10.0.8.7 -P 3306 -u root -p
 
 #清屏
 ctrl l
@@ -56,11 +59,74 @@ quit
 exit
 ```
 
+# MySQL数据类型
 
+MySQL数据类型定义了数据的大小范围，因此使用时选择合适的数据类型，不仅会降低表占用的磁盘空间，间接减少了磁盘I/O的次数，提高了表的访问效率，而且索引的效率也和数据的类型息息相关
 
+## 数值类型
 
+<img align='left' src="img/MySQL.img/image-20210526111534563.png" alt="image-20210526111534563" style="zoom:60%;" />
 
+> 注意：`age INT(9)`，括号里数字不是字节大小，整型占用内存的大小是固定的，和具体的类型是强相关的，括号里的数字(M)只是代表显示的宽度
 
+## 字符串类型
+
+数据库里字符串用单引号括起来
+
+<img src="img/MySQL.img/image-20210526111953464.png" alt="image-20210526111953464" style="zoom:67%;" />
+
+> char与varchar区别：
+>
+> - char 表示定长，长度固定，varchar表示变长，即长度可变。char如果插入的长度小于定义长度时，则用空格填充；varchar小于定义长度时，还是按实际长度存储，插入多长就存多长。
+>
+>   因为char长度固定，char的存取速度还是要比varchar要快得多，方便程序的存储与查找；但是char也为此付出的是空间的代价，因为其长度固定，所以会占据多余的空间，可谓是以空间换取时间效率。varchar则刚好相反，以时间换空间。
+>
+> - char最多存255个字符，varchar最多存65532个
+
+## 日期和时间类型
+
+<img align='left' src="img/MySQL.img/image-20210526113201496.png" alt="image-20210526113201496" style="zoom: 57%;" />
+
+> TIMESTAMP会自动更新时间，非常适合那些需要记录最新更新时间的场景，而DATETIME需要手动更
+> 新。  
+>
+> 返回当前系统时间：select now();
+>
+> 返回一个时间戳：select unix_timestamp(now());  #返回结果是一个从1970年开始的一个秒数
+
+## enum和set
+
+这两个类型，都是限制该字段只能取固定的值，但是枚举字段只能取一个唯一的值，而集合字段可以取任意个值
+
+比如：性别只能取男/女：`sex enum('M', 'W') default 'M'  `
+
+# MySQL运算符
+
+**算术运算符：**+   -   *   /,DIV   %,MOD
+
+**逻辑运算符：**与（AND,&&）、或（OR,||）、非（NOT,!）
+
+**比较运算符：**
+
+<img align='left' src="img/MySQL.img/image-20210526122054656.png" alt="image-20210526122054656" style="zoom:50%;" />
+
+比较运算符使用示例：
+
+```mysql
+select * from user where sex='M' and score>=90.0;
+select * from user where age between 20 and 22;
+select * from user where score in (99.0, 100.0); 
+select * from user where score is NOT NULL;
+select * from user where name like 'zhang%';  /* zhang san, zhang na, zhang yang */
+```
+
+**通配符：**
+
+%：替代一个或多个字符
+
+_：仅替代一个字符
+
+# T9完整性约束
 
 
 
