@@ -28,8 +28,6 @@
 
 
 
-
-
 **3. 分库分表 + 水平拆分（MySQL集群）**  
 
 <img align='left' src="img/Redis.img/image-20210331100844656.png" alt="image-20210331100844656" style="zoom:50%;" />
