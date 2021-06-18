@@ -130,7 +130,7 @@ _：仅替代一个字符
 
 主键约束：primary key
 
-自增性约束：auto_increment
+自增性约束：auto_increment，设置自增了之后，添加字段时候会自动增大序号，删除之前的并不会复用小序号
 
 唯一键约束：unique
 
@@ -171,10 +171,6 @@ _：仅替代一个字符
 
 **第四范式4NF：**消除表中的多值依赖
 
-# T15
-
-
-
 # SQL语句
 
 SQL：Structured Query Language，结构化查询语言，关系型数据库的通用语言。  
@@ -199,7 +195,7 @@ table：二维表（行：记录；列：字段/属性）
 show databases; # 注意分号
 
 #创建数据库
-create database serverdb;
+create database 数据库名;
 
 #删除数据库
 drop database 数据库名;
@@ -213,7 +209,7 @@ use serverdb;
 ```mysql
 #创建表
 CREATE TABLE user(
-    username varchar(50) NOT NULL,
+    username varchar(50) NOT NULL,  # 名称  类型  完整性约束条件 
     passwd varchar(50) NOT NULL,
     age tinyint not NULL,
 )ENGINE=InnoDB, default charset=utf8;
@@ -238,6 +234,8 @@ quit
 exit
 ```
 
+# T18
+
 ## CRUD、连接查询
 
 - C：Create增加`CREATE TBL ...`，`insert into...`
@@ -251,6 +249,8 @@ exit
 insert into user(nickname, name, age, sex) values('wang', 'li', 22, 'M');
 insert into user(nickname, name, age, sex) values('666', 'li si', 21, 'W'), ('888', 'gao yang', 20, 'M');
 ```
+
+<img src="img/MySQL.img/image-20210618113400360.png" alt="image-20210618113400360" style="zoom:45%;" />
 
 **查询select**
 
