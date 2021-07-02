@@ -171,6 +171,18 @@ _：仅替代一个字符
 
 **第四范式4NF：**消除表中的多值依赖
 
+# 聚集函数
+
+count、sum、avg、max、min
+
+```mysql
+select count(*) from user;  #返回user表中的记录数
+
+select avg(grade) from SC where Cno='1'  #计算选修1号课程的学生平均成绩
+```
+
+注意：where子句中是不能用聚集函数作为条件表达式的，聚集函数只能用于==select子句和group by中的having子句==
+
 # SQL语句
 
 SQL：Structured Query Language，结构化查询语言，关系型数据库的通用语言。  
@@ -234,9 +246,7 @@ quit
 exit
 ```
 
-# T18
-
-## CRUD、连接查询
+## CRUD增查改删
 
 - C：Create增加`CREATE TBL ...`，`insert into...`
 - R：Retrieve查询`SELECT * from ...`
@@ -253,6 +263,14 @@ insert into user(nickname, name, age, sex) values('666', 'li si', 21, 'W'), ('88
 <img src="img/MySQL.img/image-20210618113400360.png" alt="image-20210618113400360" style="zoom:45%;" />
 
 **查询select**
+
+==注意：字符串使用通配符时候得使用like，使用null/not null得使用is==
+
+```mysql
+# 带通配符的匹配  
+select name,age,sex from user where name like "zhang%";
+select name,age,sex from user where name is not null;
+```
 
 ```mysql
 select * from user;
@@ -313,21 +331,6 @@ select * from user where id not in(10, 20, 30, 40, 50)
 select * from user where id in(select stu_id from grade where average>=60.0)
 ```
 
-**分页查询**
-
-LIMIT 子句可以被用于强制 SELECT 语句返回指定的记录数
-
-```mysql
-select id,nickname,name,age,sex from user limit 10;  #返回10条记录数
-SELECT * FROM table LIMIT 5,10; # 检索记录行 6-15   
-  
-#如果只给定一个参数，它表示返回最大的记录行数目：    
-SELECT * FROM table LIMIT 5; #检索前 5 个记录行  
-
-#为了检索从某一个偏移量到记录集的结束所有的记录行，可以指定第二个参数为 -1：    
-SELECT * FROM table LIMIT 95,-1; #检索记录行 96-last.   
-```
-
 **排序order by**
 
 ```mysql
@@ -336,6 +339,8 @@ order by age asc;  # 升序
 
 select id,nickname,name,age,sex from user where sex='M' and age>=20 and age<=25
 order by age desc;  # 降序
+
+select * from user order by name,age desc;  #如果name相同再按age排序
 ```
 
 **分组group by**
@@ -343,20 +348,76 @@ order by age desc;  # 降序
 ```mysql
 select sex from user group by sex;
 select count(id), sex from user group by sex;  #查询不同性别的人数，count函数返回记录数
-select count(id), age from user group by age having age>20;
+select count(id), age from user group by age having age>20;  #对group by的结果过滤使用having
 ```
+
+group by多和统计count配合使用：
+
+<img align='left' src="img/MySQL.img/image-20210702180841953.png" alt="image-20210702180841953" style="zoom:40%;" />
 
 **笔试实践**
 
 <img align='left' src="img/MySQL.img/image-20210529122413026.png" alt="image-20210529122413026" style="zoom:50%;" />
 
 ```mysql
-#我的代码
-select count(serno), sum(amount) from bank_bill
-select amount from bank_bill group by brno order by amount desc;
+#统计表中缴费的总笔数和总金额
+select count(serno), sum(amount) from bank_bill 
+
+#按网点和日期统计每个网点每天的营业额，并按照营业额进行倒叙排序
+select brno,date,sum(amount) as money from bank_bill group by brno,date order by brno,money desc;
 ```
 
-**连接查询**
+![image-20210702183920270](img/MySQL.img/image-20210702183920270.png)
+
+![image-20210702183842892](img/MySQL.img/image-20210702183842892.png)
+
+## explain查看执行计划
+
+在查询语句前面加explain能够查看SQL语句查询的一些计划/信息
+
+```mysql
+explain select * from user where name='wang';
+```
+
+![image-20210702163634116](img/MySQL.img/image-20210702163634116.png)
+
+注意：explain看不到mysql的一些优化，比如使用`select * from user where age=20 limit 1;`去查找，mysql其实找到一条符合条件的就会结束查找，但是使用explain看到的rows那里还是会显示扫描了所有行数
+
+## limit分页查询
+
+**limit 子句可以被用于强制 select 语句返回指定的记录数**
+
+```mysql
+#如果只给定一个参数，它表示返回最大的记录行数目：    
+SELECT * FROM table LIMIT 5; #检索前 5 个记录行  
+
+#两个参数：第一个参数是偏移量，第二个参数是检索的行数
+SELECT * FROM table LIMIT 5,10; # 偏移5个，后面的10个返回，即：6-15行
+
+#上面两个参数的语法等价于：
+select * from table limit 10 offset 5   # 偏移5个，后面的10个返回，即：6-15行
+
+#为了检索从某一个偏移量到记录集的结束所有的记录行，可以指定第二个参数为 -1：    
+SELECT * FROM table LIMIT 95,-1; #检索记录行 96-last.   
+```
+
+<img align='left'  src="img/MySQL.img/image-20210702171459760.png" alt="image-20210702171459760" style="zoom:50%;" />
+
+**limit可以提高查询的效率，如下图：（因为如果找完limit限制的记录数，就不会继续扫描了）**
+
+<img align='left' src="img/MySQL.img/image-20210702170426189.png" alt="image-20210702170426189" style="zoom:30%;" />
+
+**使用limit的两个参数用法时，偏移第一个参数的时候有时效率不高，可以使用某个主键的where条件来优化：**
+
+```mysql
+select * from user limit 1000000, 20  #偏移1000000个，返回20个
+#优化后：
+select * from user where id > 1000000 limit 20 #因为id是主键，所以where条件很快
+```
+
+<img align='left' src="img/MySQL.img/image-20210702173113783.png" alt="image-20210702173113783" style="zoom:40%;" />
+
+## T25连接查询
 
 ```mysql
 #内连接：inner join
