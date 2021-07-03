@@ -417,28 +417,52 @@ select * from user where id > 1000000 limit 20 #因为id是主键，所以where�
 
 <img align='left' src="img/MySQL.img/image-20210702173113783.png" alt="image-20210702173113783" style="zoom:40%;" />
 
-## T25连接查询
+## 连接查询
+
+**内连接**
+
+<img align='left' src="img/MySQL.img/image-20210703120707886.png" alt="image-20210703120707886" style="zoom:37%;" />
 
 ```mysql
 #内连接：inner join
 SELECT a.属性名1,a.属性名2,...,b,属性名1,b.属性名2... FROM table_name1 a 
-inner join table_name2 b on a.id = b.id 
+inner join table_name2 b on a.id = b.id   #inner可以省略，默认join就是内连接
 where a.属性名 满足某些条件;
 
-SELECT a.runoob_id, a.runoob_author, b.runoob_count FROM runoob_tbl a 
-INNER JOIN tcount_tbl b ON a.runoob_author = b.runoob_author;
+#on a.uid = c.uid 区分大表和小表，按照数量来区分，小表永远是整表扫描，然后去大表扫描，所以给大表建索引是有用的
+#从stuent小表中取出所有的a.uid，然后拿着这些uid去大表中搜索（大表中uid加索引提高效率）
+select a.uid,a.name,a.age,a.sex,c.score from student a  #student a 即 student as a，as可以省略
+inner join exam c on a.uid=c.uid
+where c.uid=1 and c.uid=2;
 ```
 
+![image-20210703132004737](img/MySQL.img/image-20210703132004737.png)
+
+![image-20210703132748748](img/MySQL.img/image-20210703132748748.png)
+
+**自己和自己内连接来优化查询的应用场景：**
+
+如对于：`select * from t_user limit 1500000,10`，可以使用`select * from t_user where id > 1500000 limit 10`来提高效率，但是有时候不知道id具体的条件，无法使用where子句来查，则可以通过以下自己和自己做内连接来调高效率：（id是主键，id的limit 1500000比所有属性进行limit 1500000快，然后再从小表中取出所有的id，然后拿着这些id去大表中搜索，因为id是主键所有查询是常数级别）
+
 ```mysql
-# 左连接：left join
-# 把left这边的表所有的数据显示出来，在右表中不存在相应数据，则显示NULL
+#自己和自己的临时表内连接
+select a.id,a.email,a.password from t_user a inner join(select id from from t_user limit 1500000,10) b on a.id=b.id;
+```
+
+**左/右外连接**
+
+通过外连接可以判断哪些属性是NULL
+
+```mysql
+# 左连接：left outer join，outer可以省略
+# 先对左表进行整表扫描，把left这边的表所有的数据显示出来，在右表中不存在相应数据，则显示NULL
 select a.* from User a left outer join Orderlist b on a.uid=b.uid where
 a.orderid is null;
 ```
 
 ```mysql
-# 右连接
-# 把right这边的表所有的数据显示出来，在左表中不存在相应数据，则显示NULL
+# 右连接：right outer join，outer可以省略
+# 先对右表进行整表扫描，把right这边的表所有的数据显示出来，在左表中不存在相应数据，则显示NULL
 select a.* from User a right outer join Orderlist b on a.uid=b.uid where
 b.orderid is null;
 ```
@@ -457,7 +481,54 @@ b.orderid is null;
 
 > [[left join,right join,inner join,full join之间的区别](https://www.cnblogs.com/lijingran/p/9001302.html)]
 
-# MySQL的存储引擎
+**左连接示例：**
+
+![image-20210703163003915](img/MySQL.img/image-20210703163003915.png)
+
+**注意：连接查询里的where和on**
+
+对于inner join内连接，过滤条件写在where的后面和on连接条件里面，效果是一样的，mysql会把on的条件翻译成where（因为where后面的过滤条件可以通过索引来进行过滤），但是对于外连接来说是不一样的：
+
+```mysql
+select a.* from student a inner join exame b on a.uid=b.uid where b.cid=3;
+select a.* from student a left join exame b on a.uid=b.uid where b.cid=3;
+select a.* from student a left join exame b on a.uid=b.uid and b.cid=3;
+```
+
+![image-20210703165554507](img/MySQL.img/image-20210703165554507.png)
+
+上图的sql语句查询结果是一样的，因为left join后面的where条件会先执行，而并不是按左连接那样先去扫描左表，所以这样写就和内连接查询结果一样了
+
+如下图这样写就可以得到正确的左连接查询结果：
+
+![image-20210703165906045](img/MySQL.img/image-20210703165906045.png)
+
+**具体sql执行信息可以通过expalin来查看：**
+
+```mysql
+select a.* from student a inner join exame b on a.uid=b.uid where b.cid=3;
+select a.* from student a left join exame b on a.uid=b.uid where b.cid=3;
+```
+
+如下图：这两句语句的执行是相同的：都是先using where来过滤b表，然后b表就是一个小表，再拿小表去大表a里面搜索
+
+![image-20210703171113017](img/MySQL.img/image-20210703171113017.png)
+
+当把过滤条件换成and之后：
+
+```mysql
+select a.* from student a left join exame b on a.uid=b.uid and b.cid=3;
+```
+
+如下图：会先对左表a做整表扫描，符合左连接查询的流程
+
+![image-20210703171017614](img/MySQL.img/image-20210703171017614.png)
+
+**因此：**
+
+使用外连接查询的时候要留意：过滤条件使用on...and这样的而不是where，where的条件只用来作null值判断
+
+# T32MySQL的存储引擎
 
 数据库存储引擎：是数据库底层软件组织，数据库管理系统（DBMS）使用数据引擎进行创建、查询、更新和删除数据。不同的存储引擎提供不同的存储机制、索引技巧、锁定水平等功能，使用不同的存储引擎，还可以获得特定的功能。现在许多不同的数据库管理系统都支持多种不同的数据引擎。MySQL的核心就是插件式存储引擎。
 
