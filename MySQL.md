@@ -249,8 +249,13 @@ exit
 ## CRUD增查改删
 
 - C：Create增加`CREATE TBL ...`，`insert into...`
+
 - R：Retrieve查询`SELECT * from ...`
+
+  <img align='left' src="img/MySQL.img/image-20210704095831843.png" alt="image-20210704095831843" style="zoom:30%;" />
+
 - U：Update修改`UPDATE TBL ..SET ...`
+
 - D：Delete删除`DELETE FROM TBL WHERE ...`
 
 **增加insert**
@@ -1067,5 +1072,37 @@ firewall-cmd --reload
 firewall-cmd --list-ports
 ```
 
+# if函数
 
+IF函数有时被称为IF ELSE或IF THEN ELSE函数。
+
+IF函数语法如下：
+
+```mhsql
+IF(expr,if_true_expr,if_false_expr)
+```
+
+IF函数通常与SUM()函数组合，
+
+```mysql
+SELECT
+    SUM(IF(status = 'Shipped', 1, 0)) AS Shipped,
+    SUM(IF(status = 'Cancelled', 1, 0)) AS Cancelled
+FROM
+    orders;
+```
+
+IF函数与COUNT()函数组合，因为COUNT函数不计算空值，所以如果状态不在选定状态，IF函数将返回NULL，否则将返回1。
+
+```mysql
+SELECT
+    COUNT(IF(status = 'Cancelled', 1, NULL)) Cancelled,
+    COUNT(IF(status = 'Disputed', 1, NULL)) Disputed,
+    COUNT(IF(status = 'In Process', 1, NULL)) 'In Process',
+    COUNT(IF(status = 'On Hold', 1, NULL)) 'On Hold',
+    COUNT(IF(status = 'Resolved', 1, NULL)) 'Resolved',
+    COUNT(IF(status = 'Shipped', 1, NULL)) 'Shipped'
+FROM
+    orders;
+```
 
