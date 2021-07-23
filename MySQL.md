@@ -223,7 +223,7 @@ use serverdb;
 CREATE TABLE user(
     username varchar(50) NOT NULL,  # 名称  类型  完整性约束条件 
     passwd varchar(50) NOT NULL,
-    age tinyint not NULL,
+    age tinyint not NULL
 )ENGINE=InnoDB, default charset=utf8;
 
 #添加数据
@@ -350,6 +350,12 @@ select * from user order by name,age desc;  #如果name相同再按age排序
 
 **分组group by**
 
+GROUP BY 语句用于结合合计函数，根据一个或多个列对结果集进行分组
+
+直接`select 某列 from table group by 某列`只会显示该分组的第一条记录，所以一般group by都是和count合用来统计组内的数量
+
+![image-20210708164130958](img/MySQL.img/image-20210708164130958.png)
+
 ```mysql
 select sex from user group by sex;
 select count(id), sex from user group by sex;  #查询不同性别的人数，count函数返回记录数
@@ -359,6 +365,17 @@ select count(id), age from user group by age having age>20;  #对group by的结�
 group by多和统计count配合使用：
 
 <img align='left' src="img/MySQL.img/image-20210702180841953.png" alt="image-20210702180841953" style="zoom:40%;" />
+
+**having过滤分组**
+
+```mysql
+select id,count(*) as nums
+from orders
+group by id
+having count(*)>=2
+```
+
+<img align='left' src="img/MySQL.img/image-20210709093610398.png" alt="image-20210709093610398" style="zoom:50%;" />
 
 **笔试实践**
 
@@ -533,7 +550,7 @@ select a.* from student a left join exame b on a.uid=b.uid and b.cid=3;
 
 使用外连接查询的时候要留意：过滤条件使用on...and这样的而不是where，where的条件只用来作null值判断
 
-# T32MySQL的存储引擎
+# MySQL的存储引擎
 
 数据库存储引擎：是数据库底层软件组织，数据库管理系统（DBMS）使用数据引擎进行创建、查询、更新和删除数据。不同的存储引擎提供不同的存储机制、索引技巧、锁定水平等功能，使用不同的存储引擎，还可以获得特定的功能。现在许多不同的数据库管理系统都支持多种不同的数据引擎。MySQL的核心就是插件式存储引擎。
 
@@ -551,6 +568,10 @@ select a.* from student a left join exame b on a.uid=b.uid and b.cid=3;
 
 
 
+使用`show engines;`可以查看存储引擎
+
+![image-20210708160223676](img/MySQL.img/image-20210708160223676.png)
+
 ## MyISAM
 
 MyISAM 不支持事务、也不支持外键，索引采用非聚集索引，其优势是访问的速度快，对事务完整性没有要求，以 SELECT、INSERT 为主的应用基本上都可以使用这个存储引擎来创建表。
@@ -566,6 +587,8 @@ MyISAM的表在磁盘上存储成 3 个文件，其文件名都和表名相同�
 MyISAM引擎使用B+树作为索引结构，==叶节点的data域存放的是数据记录的地址（非聚集索引）==。下图是MyISAM主键索引的原理图：
 
 <img align='left' src="img/MySQL.img/image-20210529132741262.png" alt="image-20210529132741262" style="zoom:40%;" />  
+
+
 
 
 
@@ -641,7 +664,7 @@ MEMORY 类型的表访问非常快，因为它的数据是放在内存中的，�
 
  
 
-# MySQL索引
+# T33MySQL索引
 
 索引：为了更快地查找到数据
 
